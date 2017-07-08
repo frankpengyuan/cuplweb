@@ -69,7 +69,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'cuplweb.wsgi.application'
-
+AUTH_USER_MODEL = 'course.Student'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
