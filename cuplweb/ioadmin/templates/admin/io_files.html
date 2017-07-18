@@ -1,0 +1,95 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
+&rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
+</div>
+{% endblock %}
+
+{% block content %}
+{% block form_top %}{% endblock %}
+
+<div style="border-left: 6px solid green; background-color: lightgreen;">
+	<h2 style="margin-left:5px">{% if succ_msg %} {{ succ_msg }} {% endif %}</h2>
+</div>
+<div style="border-left: 6px solid red; background-color: #ff8888;">
+	<h2 style="margin-left:5px">{% if fail_msg %} {{ fail_msg }} {% endif %}</h2>
+</div>
+
+<form enctype="multipart/form-data" action="{{ form_url }}" method="post" id="student_form" novalidate>
+<input name="student_form" type="hidden"/>
+<div>
+	{% csrf_token %}
+	<fieldset class="module aligned ">
+
+	<h2>导入学生数据</h2>
+	<div class="form-row">
+	<div>
+		<label for="grade" style="display: inline-block; width: 140px;">年级</label>
+		<select name="grade", id="grade">
+		  <option value="lv1">大一</option>
+		  <option value="lv2">大二</option>
+		  <option value="lv3">大三</option>
+		  <option value="lv4">大四</option>
+		</select>
+	</div>
+	</div>
+
+	<div class="form-row">
+	<div>
+		<label for="file" style="display: inline-block; width: 140px;">学生信息文件</label>
+		<input type="file" name="file" id="file" class="clearable-file-input"/>
+		<input type="submit" value="上传" name="_save"/>
+	</div>
+	</div>
+	</fieldset>
+</div>
+</form>
+
+<form enctype="multipart/form-data" action="{{ form_url }}" method="post" id="course_form" novalidate>
+<input name="course_form" type="hidden"/>
+<div>
+	{% csrf_token %}
+	<fieldset class="module aligned ">
+	<h2>导入课程数据</h2>
+	<div class="form-row">
+	<div>
+		<label for="file" style="display: inline-block; width: 140px;">课程信息文件</label>
+		<input type="file" name="file" id="file" class="clearable-file-input"/>
+		<input type="submit" value="上传" name="_save"/>
+	</div>
+	</div>
+	</fieldset>
+</div>
+</form>
+
+<form enctype="multipart/form-data" action="{{ form_url }}" method="post" id="action_form" novalidate>
+<input name="action_form" type="hidden"/>
+<div>
+	{% csrf_token %}
+	<fieldset class="module aligned ">
+	<h2>自动排课与导出</h2>
+	<div class="form-row">
+	<div>
+		<input name="run" type="hidden"/>
+		<label for="_save" style="display: inline-block; width: 140px;">自动排课</label>
+		<input type="submit" value="运行" name="_save"/>
+	</div>
+	</div>
+
+	<div class="form-row">
+	<div>
+		<input name="download" type="hidden"/>
+		<label for="_save" style="display: inline-block; width: 140px;">下载结果</label>
+		<input type="submit" value="下载" name="_save"/>
+	</div>
+	</div>
+	</fieldset>
+</div>
+</form>
+{% endblock %}

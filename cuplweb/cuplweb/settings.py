@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'course',
+    'ioadmin',
 ]
 
 MIDDLEWARE = [
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -73,6 +75,7 @@ AUTH_USER_MODEL = 'course.Student'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# GRANT ALL PRIVILEGES ON *.* TO 'cuplweb'@'localhost' IDENTIFIED BY '3wer@#frwf423FRe$T';
 
 DATABASES = {
     'default': {
@@ -80,7 +83,8 @@ DATABASES = {
         'NAME': 'cuplweb',
         'USER': 'cuplweb',
         'PASSWORD': '3wer@#frwf423FRe$T',
-        'HOST': '127.0.0.1',
+        'HOST': 'localhost',
+        # 'HOST': '127.0.0.1',
         'PORT': '3306',
     }
 }
@@ -89,26 +93,18 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'en-us'
+LANGUAGES = [
+    ('zh-Hans', 'Chinese'),
+]
+
+LANGUAGE_CODE = 'zh-Hans'
 
 TIME_ZONE = 'Etc/GMT+8'
 
