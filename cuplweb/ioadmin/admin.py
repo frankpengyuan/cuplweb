@@ -1,11 +1,20 @@
 from django import forms
 from django.db import connection
 from django.contrib import admin
+from django.contrib.auth.models import Group
 from django.views.decorators.http import require_http_methods
 from django.utils.safestring import mark_safe
 
 from .models import SiteSetting, IOStudent
-from course.models import Student
+from course.models import Student, Course, SpecialReq
+
+
+admin.site.unregister(Group)
+
+
+class FieldException(Exception):
+	pass
+
 
 # # Register your models here.
 class SiteSettingAdmin(admin.ModelAdmin):
@@ -34,16 +43,29 @@ def handle_uploaded_file(f, dir_file):
             destination.write(chunk)
 
 
+def _get_gender(data, for_course=False):
+	if data == '男':
+		return 'M'
+	elif data == '女':
+		return 'F'
+	else:
+		if not for_course:
+			raise FieldException("gender error") 
+		else:
+			return 'B'
+
+
 def store_stu_info(fname, grade_lv):
 	students = []
 	failed = []
 	mfile = open('uploads/'+fname, 'r')
 	try:
 		for line_n, line in enumerate(mfile):
-			print('processing line ', line_n)
-			print(line)
 			fields = [field.strip() for field in line.strip().split(',')]
+			target_fields = ['XM', 'XB', 'XH', 'SFZH']
 			if line_n == 0:
+				if any(t not in fields for t in target_fields):
+					return ("", mark_safe("导入失败，请确认文件包含以下列：<br>"+' '.join(target_fields)))
 				header_dict = {
 					'XM': fields.index("XM"),
 					'XB': fields.index("XB"),
@@ -51,12 +73,7 @@ def store_stu_info(fname, grade_lv):
 					'SFZH': fields.index("SFZH"),
 				}
 			elif fields[header_dict['XH']] != '':
-				if fields[header_dict['XB']] == '男':
-					gender = 'M'
-				elif fields[header_dict['XB']] == '女':
-					gender = 'F'
-				else:
-					raise Exception("gender error")
+				gender = _get_gender(fields[header_dict['XB']])
 				students.append(
 				'('+', '.join([
 					"\'"+fields[header_dict['XH']]+"\'",
@@ -87,6 +104,97 @@ def store_stu_info(fname, grade_lv):
 			mark_safe("以下信息导入失败，请手动录入：<br>"+'<br>'.join(failed)))
 
 
+def _get_course_cat(data):
+	if '一' in data or '二' in data:
+		return 'pe1or2'
+	elif '三' in data or '四' in data:
+		return 'pe3or4'
+	else:
+		raise FieldException("pe1/2 or pe3/4 error")
+
+
+def _get_course_time(fields, indices):
+	mapping = {
+		'1-2':'1',
+		'3-4':'2',
+		'6-7':'3',
+		'8-9':'4',
+	}
+	for day in range(5):
+		if fields[indices[day]] != '' and fields[indices[day]] in mapping:
+			return str(day+1)+mapping[fields[indices[day]]]
+	raise FieldException("no time slot found for course\n"+','.join(fields))
+
+
+def _get_special_req(data):
+	if SpecialReq.objects.filter(name=data).count() == 0:
+		return None
+	else:
+		return SpecialReq.objects.get(name=data)
+
+
+def store_course_info(fname):
+	mfile = open('uploads/'+fname, 'r')
+	courses = []
+	failed = []
+	try:
+		for line_n, line in enumerate(mfile):
+			fields = [field.strip() for field in line.strip().split(',')]
+			target_fields = ["课序", "课程名", "课容量", "选课人数", "星期一",
+				"星期二", "星期三", "星期四", "星期五", "性别", "特别要求"]
+			if line_n == 0:
+				if any(t not in fields for t in target_fields):
+					return ("", mark_safe("导入失败，请确认文件包含以下列：<br>"+' '.join(target_fields)))
+				header_dict = {
+					'course_idx': fields.index("课序"),
+					'course_name': fields.index("课程名"),
+					'capacity': fields.index("课容量"),
+					'cur_num': fields.index("选课人数"),
+					'week_days': [
+						fields.index("星期一"),
+						fields.index("星期二"),
+						fields.index("星期三"),
+						fields.index("星期四"),
+						fields.index("星期五"),
+					],
+					'gender': fields.index("性别"),
+					'special_req': fields.index("特别要求"),
+				}
+			elif fields[header_dict['course_name']] != '':
+				course_name = '-'.join([
+					fields[header_dict['course_name']],
+					fields[header_dict['course_idx']],
+				])
+				special_req = fields[header_dict['special_req']]
+				if (special_req != '' and SpecialReq.objects.filter(name=special_req).count() == 0):
+					new_spe = SpecialReq.objects.create(name=special_req, description='')
+					new_spe.save()
+				try:
+					courses.append(Course(
+						course_name=course_name,
+						time_slot=_get_course_time(fields, header_dict['week_days']),
+						course_cat=_get_course_cat(course_name),
+						gender=_get_gender(fields[header_dict['gender']], for_course=True),
+						special_req=_get_special_req(special_req),
+						cur_number=fields[header_dict['cur_num']],
+						max_number=fields[header_dict['capacity']],
+						auto_match=True,
+					))
+				except FieldException as e:
+					failed.append(line)
+	except UnicodeError as e:
+		failed.append(line)
+
+	mfile.close()
+	Course.objects.all().delete()
+	Course.objects.bulk_create(courses)
+	if len(failed) == 0:
+		return "导入完成！共导入"+str(len(courses))+"项课程", ""
+	else:
+		return (mark_safe("导入完成！共导入"+str(len(courses))+"项课程<br>"),
+			mark_safe("以下信息导入失败，请手动录入：<br>"+'<br>'.join(failed)))
+
+
 class IOStudentAdmin(admin.ModelAdmin):
 	change_list_template = 'admin/io_files.html'
 	def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -103,7 +211,12 @@ class IOStudentAdmin(admin.ModelAdmin):
 				if fail_msg != '':
 					extra_context['fail_msg'] = fail_msg
 			elif "course_form" in request.POST:
-				pass
+				handle_uploaded_file(request.FILES['file'], 'courses.csv')
+				succ_msg, fail_msg = store_course_info('courses.csv')
+				extra_context = extra_context or {}
+				extra_context['succ_msg'] = succ_msg
+				if fail_msg != '':
+					extra_context['fail_msg'] = fail_msg
 			elif "action_form" in request.POST:
 				pass
 		return super(IOStudentAdmin, self).changelist_view(
