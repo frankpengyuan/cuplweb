@@ -4,7 +4,7 @@
 
 {% block body %}
 
-<div class="col-md-offset-3 col-md-6">
+<div>
     <h2>{{user.username}}</h2>
     确认信息，如有误请到办公室更正。<br>
     <hr>
@@ -17,7 +17,7 @@
     {{select.day_slot}} {{select.time_slot}}<br>
     {% endfor %}
 </div> <!-- /container -->
-<div class="col-md-offset-3 col-md-6">
+<div>
     <span style="float: right">
         <a href="/choose_cat"><button class="btn btn-default">确定</button></a>
     </span>

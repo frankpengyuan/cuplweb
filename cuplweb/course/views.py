@@ -31,6 +31,7 @@ def mylogin(request):
 		user = authenticate(request, username=username, password=password)
 		if user is not None:
 			login(request, user)
+			request.session.set_expiry(0)
 			return redirect('index')
 		else:
 			context['error'] = "学号或身份证号错误"
@@ -162,7 +163,6 @@ def initial_selectable_in_session(request):
 		cursor.execute(query)
 		selectable_raw = cursor.fetchall()
 		for day_slot, day_data in groupby(selectable_raw, lambda x: x[0]):
-			print(day_slot, day_data)
 			request.session["selectable"][day_slot] = sorted([d[1] for d in day_data])
 
 
@@ -215,7 +215,7 @@ def get_selected(request, weekday):
 	return selected
 
 
-def handle_selection_update(request, weekday):
+def handle_selection_update(request, weekday, errors):
 	new_selection = []
 	for name in ["1", "2", "3", "4"]:
 		if request.POST[name] == "True":
@@ -228,16 +228,18 @@ def handle_selection_update(request, weekday):
 	elif request.POST["to"] == "next" and int(weekday) < 5:
 		return redirect("/timetable/"+str(int(weekday)+1))
 	elif request.POST["to"] == "next" and int(weekday) == 5:
+		if get_cur_selected_num(request) < 3:
+			errors.append("请至少选择3节可上课时间")
 		return redirect("confirm")
 
 
 @system_online_required
 @login_required
 def timetable(request, weekday):
+	errors = []
 	if request.method == 'POST':
-		redir = handle_selection_update(request, weekday)
-		print(request.session["selected"][weekday])
-		if redir is not None:
+		redir = handle_selection_update(request, weekday, errors)
+		if len(errors) == 0 and redir is not None:
 			return redir
 
 	time_slots = range(1, 5)
@@ -253,6 +255,7 @@ def timetable(request, weekday):
 	
 	context = {
 		"cur_selected_num": get_cur_selected_num(request),
+		"errors": errors,
 		"time_slots": zip(time_slots, slot_names, selected, selectable),
 		"weekday": weekday,
 		"weekday_name": weekday_names[int(weekday)-1],
