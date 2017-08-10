@@ -173,3 +173,15 @@ class Selection(models.Model):
 		verbose_name = '学生选择'
 		verbose_name_plural = '学生选择'
 		unique_together = ('student', 'day_slot', 'time_slot',)
+
+
+class StudentReq(models.Model):
+	student = models.ForeignKey(
+		Student, on_delete=models.CASCADE, verbose_name="学生")
+	special_req = models.ForeignKey(
+		SpecialReq, on_delete=models.CASCADE, verbose_name="特殊要求")
+	
+	class Meta:
+		verbose_name = '学生特殊要求'
+		verbose_name_plural = '学生特殊要求'
+		unique_together = ('student', 'special_req')

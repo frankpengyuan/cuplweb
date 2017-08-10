@@ -43,7 +43,7 @@ class StudentForm(UserChangeForm):
 class StudentFormFixed(StudentForm):
 	username = forms.CharField(label="学号", disabled=True)
 	password = forms.CharField(label="身份证号后8位", disabled=True)
-	gender = forms.ChoiceField(label="性别", choices=STU_GENDER, required=False, disabled=True)
+	gender = forms.ChoiceField(label="性别", choices=STU_GENDER, required=True)
 	course_cat = forms.ChoiceField(label="上课类别", choices=CAT, required=False, disabled=True)
 
 

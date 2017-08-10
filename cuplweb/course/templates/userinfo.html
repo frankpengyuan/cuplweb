@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block body %}
+
+<div class="col-md-offset-3 col-md-6">
+    <h2>{{user.username}}</h2>
+    确认信息，如有误请到办公室更正。<br>
+    <hr>
+    <strong>性别:</strong>{{user.get_gender_display}}<br>
+    {% if user.course_cat != '' %}
+    <strong>选课类别：</strong>{{user.get_course_cat_display}}<br>
+    {% endif %}
+    <strong>已选时间段：</strong><br>
+    {% for select in selections %}
+    {{select.day_slot}} {{select.time_slot}}<br>
+    {% endfor %}
+</div> <!-- /container -->
+<div class="col-md-offset-3 col-md-6">
+    <span style="float: right">
+        <a href="/choose_cat"><button class="btn btn-default">确定</button></a>
+    </span>
+</div>
+{% endblock %}

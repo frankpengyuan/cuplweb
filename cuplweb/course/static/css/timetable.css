@@ -1,0 +1,11 @@
+th span {
+	font-weight: normal;
+}
+
+th[selected="True"] {
+	background-color: #AAFFAA;
+}
+
+th[selectable="False"] {
+	background-color: #EEEEEE;
+}

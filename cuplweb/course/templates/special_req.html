@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block body %}
+<div class="col-md-offset-3 col-md-6">
+	<h2>是否愿意选择 {{special_req.0}} 的课程？</h2><br>
+	<p>{{special_req.1}}</p><br>
+	<form class="" action="/special_req/{{special_req_idx}}" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="choose" value="true"/>
+		<button class="btn btn-lg btn-block
+			{% if special_req.2 %}
+				btn-primary
+			{% else %}
+				btn-default
+			{% endif %}">
+			是
+		</button>
+	</form>
+	<hr>
+	<form class="" action="/special_req/{{special_req_idx}}" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="choose" value="false"/>
+		<button class="btn btn-lg btn-block btn-default">
+			否
+		</button>
+	</form>
+</div>
+{% endblock %}

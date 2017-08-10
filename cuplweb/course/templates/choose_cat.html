@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block body %}
+
+<div class="col-md-offset-3 col-md-6">
+<form class="" action="choose_cat" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="cat" value="pe1or2"/>
+    <button class="btn btn-lg btn-block {% if primary1 %}btn-primary{% else %}btn-default {% endif %}">
+        体育1或体育2
+    </button>
+</form>
+<hr>
+<form class="" action="choose_cat" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="cat" value="pe3or4"/>
+    <button class="btn btn-lg btn-block {% if primary2 %}btn-primary{% else %}btn-default {% endif %}">
+        体育3或体育4
+    </button>
+</form>
+</div>
+{% endblock %}

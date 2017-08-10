@@ -1,5 +1,18 @@
 from django.core.exceptions import ValidationError
 
+from ioadmin.models import SiteSetting
+
+
+def system_online_required(func):
+    def func_wrapper(*args, **kwargs):
+        settings = SiteSetting.objects.get()
+        if settings.online_flag:
+            return func(*args, **kwargs)
+        else:
+            return redirect('offline')
+    return func_wrapper
+
+
 class IDValidator(object):
     """
     custom validator for password/身份证号后8位

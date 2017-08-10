@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block css %}
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'css/timetable.css' %}" />
+{% endblock %}
+
+{% block body %}
+<div class="col-md-offset-3 col-md-6">
+<h2 style="text-align: center">请选择 {{weekday_name}} 可上课时间</h2><br>
+<p style="text-align: center">周一至周五请选择至少3节可上课时间（共计），
+目前已经已选择<span id="sum">{{cur_selected_num}}</span>节</p>
+<form class="" action="/timetable/{{weekday}}" method="post">
+	{% csrf_token %}
+	<table class="table table-bordered">
+		{% for time_slot, slot_name, selected, selectable in time_slots %}
+		<tr>
+			<th id="{{time_slot}}", selected="{{selected}}", selectable="{{selectable}}">
+				{{slot_name}} <span>（可选）</span>
+			<input type="hidden" name="{{time_slot}}" value="{{selected}}"></input>
+			</th>
+		</tr>
+		{% endfor %}
+	</table>
+	<div class="col-xs-6">
+		{% if weekday != "1" %}
+			<button class="btn btn-lg btn-block btn-default" name="to" value="prev">上一天</button>
+		{% endif %}
+	</div>
+	<div class="col-xs-6">
+		<button class="btn btn-lg btn-block btn-primary" name="to" value="next">
+			{% if weekday != "5" %}
+				下一天
+			{% else %}
+				下一步：确认
+			{% endif %}
+		</button>
+	</div>
+</form>
+</div>
+{% endblock %}
+
+{% block preload_js %}
+	{% load static %}
+	<script src="{% static 'js/timetable.js' %}"></script>
+{% endblock %}

@@ -74,17 +74,20 @@ def store_stu_info(fname, grade_lv):
 				}
 			elif fields[header_dict['XH']] != '':
 				gender = _get_gender(fields[header_dict['XB']])
-				students.append(
-				'('+', '.join([
-					"\'"+fields[header_dict['XH']]+"\'",
-					"\'"+fields[header_dict['SFZH']][-8:]+"\'",
-					'\'0\'',
-					'\'0\'',
-					"\'"+gender+"\'",
-					'\'\'',
-					'\'1\'',
-				])+')'
-				)
+				try:
+					students.append(
+						'('+', '.join([
+						"\'"+fields[header_dict['XH']]+"\'",
+						"\'"+fields[header_dict['SFZH']][-8:]+"\'",
+						'\'0\'',
+						'\'0\'',
+						"\'"+gender+"\'",
+						'\'\'',
+						'\'1\'',
+						])+')'
+					)
+				except FieldException as e:
+					failed.append(line)
 	except UnicodeError as e:
 		failed.append(line)
 	query = '''
@@ -122,7 +125,7 @@ def _get_course_time(fields, indices):
 	}
 	for day in range(5):
 		if fields[indices[day]] != '' and fields[indices[day]] in mapping:
-			return str(day+1)+mapping[fields[indices[day]]]
+			return str(day+1), mapping[fields[indices[day]]]
 	raise FieldException("no time slot found for course\n"+','.join(fields))
 
 
@@ -172,7 +175,8 @@ def store_course_info(fname):
 				try:
 					courses.append(Course(
 						course_name=course_name,
-						time_slot=_get_course_time(fields, header_dict['week_days']),
+						day_slot=_get_course_time(fields, header_dict['week_days'])[0],
+						time_slot=_get_course_time(fields, header_dict['week_days'])[1],
 						course_cat=_get_course_cat(course_name),
 						gender=_get_gender(fields[header_dict['gender']], for_course=True),
 						special_req=_get_special_req(special_req),
