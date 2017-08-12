@@ -14,7 +14,7 @@ from django.contrib.auth.models import (
 
 CLS_GENDER = (("M", "男"), ("F", "女"), ("B", "均可"))
 STU_GENDER = (("M", "男"), ("F", "女"),)
-CAT = (("pe1or2", "体育1或2"), ("pe3or4", "体育3或4"))
+CAT = (("pe1or2", "专项1或2"), ("pe3or4", "专项3或4"))
 DAYSLOT = [
 	("1", "周一"),
 	("2", "周二"),

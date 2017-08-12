@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{user.username}}{% endblock %}
+
+{% block body %}
+
+<div>
+    <h2>{{user.username}}</h2>
+    <hr>
+    <h3>
+    <strong>选课类别：</strong>{{course_cat}}<br>
+    {% for special in special_reqs %}
+    是否选 {{special.name}}: {{special.choose_disp}}<br>
+    {% endfor %}<br>
+    <strong>已选时间段：</strong><br>
+    {% for select in selections %}
+    {{select.day_slot}} {{select.time_slot}}<br>
+    {% endfor %}
+    </h3>
+</div>
+<div>
+    <div class="col-xs-6">
+        <a href="/"><button class="btn btn-lg btn-block btn-default">重新开始</button></a>
+    </div>
+    <div class="col-xs-6">
+        <form class="" action="/confirm" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="confirm" value="true"/>
+            <button class="btn btn-lg btn-block btn-primary">
+                确定并提交
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

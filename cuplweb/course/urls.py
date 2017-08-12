@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^choose_cat/', views.choose_cat, name='choose_cat'),
     url(r'^confirm$', views.confirm, name='confirm'),
+    url(r'^finish/', views.finish, name='finish'),
     url(r'^login/', views.mylogin, name='mylogin'),
     url(r'^logout/', views.mylogout, name='logout'),
     url(r'^offline$', views.offline, name='offline'),

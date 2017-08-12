@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from ratelimit.decorators import ratelimit
 
 from ioadmin.models import SiteSetting
 from .utils import system_online_required
@@ -21,13 +22,14 @@ def offline(request):
 
 
 @system_online_required
+@ratelimit(key='ip', rate='100/m')
 def mylogin(request):
 	context = {}
 	if request.user.is_authenticated():
 		return redirect('index')
 	if request.method == 'POST':
 		username = request.POST.get('username', '')
-		password = request.POST.get('password', '')
+		password = request.POST.get('password', '').lower()
 		user = authenticate(request, username=username, password=password)
 		if user is not None:
 			login(request, user)
@@ -60,9 +62,7 @@ def index(request):
 @system_online_required
 @login_required
 def userinfo(request):
-	selections = Selection.objects.filter(student=request.user.username)
-	context = {"selections": selections}
-	return render(request, "userinfo.html", context)
+	return render(request, "userinfo.html")
 
 
 @system_online_required
@@ -263,7 +263,72 @@ def timetable(request, weekday):
 	return render(request, "timetable.html", context)
 
 
+def save_data(request):
+	request.user.course_cat = request.session["course_cat"]
+	request.user.save()
+
+	StudentReq.objects.filter(student_id=request.user.username).delete()
+	special_reqs = []
+	for idx, name in enumerate(request.session["all_req_names"]):
+		if request.session["all_req_flags"][idx] == True:
+			special_reqs.append(StudentReq(
+				student_id=request.user.username,
+				special_req=SpecialReq.objects.get(name=name),
+			))
+	StudentReq.objects.bulk_create(special_reqs)
+
+	Selection.objects.filter(student_id=request.user.username).delete()
+	selections = []
+	for day in ["1", "2", "3", "4", "5"]:
+		for select in request.session["selected"][day]:
+			selections.append(Selection(
+				student_id=request.user.username,
+				day_slot=day,
+				time_slot=select,
+			))
+	Selection.objects.bulk_create(selections)
+
+
 @system_online_required
 @login_required
 def confirm(request):
-	return HttpResponse("confirm")
+	if request.method == 'POST':
+		save_data(request)
+		return redirect("finish")
+
+	context = {}
+	for key in ["course_cat", "selected", "all_req_names", "all_req_flags"]:
+		if key not in request.session:
+	 		return redirect("index")
+	if request.session["course_cat"] == "pe1or2":
+		context["course_cat"] = "专项1"
+	else:
+		context["course_cat"] = "专项2"
+	slot_names = ["一大", "二大", "三大", "四大"]
+	weekday_names = ["周一", "周二", "周三", "周四", "周五"]
+
+	context["special_reqs"] = []
+	for idx, name in enumerate(request.session["all_req_names"]):
+		if request.session["all_req_flags"][idx] == True:
+			choose_disp = "是"
+		else:
+			choose_disp = "否"
+		context["special_reqs"].append({
+			"name": name,
+			"choose_disp": choose_disp,
+		})
+
+	context["selections"] = []
+	for day in ["1", "2", "3", "4", "5"]:
+		for select in request.session["selected"][day]:
+			context["selections"].append({
+				"day_slot": weekday_names[int(day)-1],
+				"time_slot": slot_names[int(select)-1],
+			})
+	return render(request, "confirm.html", context)
+
+
+@system_online_required
+def finish(request):
+	logout(request)
+	return render(request, "finish.html")
