@@ -205,11 +205,12 @@ class IOStudentAdmin(admin.ModelAdmin):
 	def change_view(self, request, object_id, form_url='', extra_context=None):
 		return self.changelist_view(request, extra_context=extra_context)
 
-	def _extend_msg(extra_context, succ_msg, fail_msg):
+	def _extend_msg(self, extra_context, succ_msg, fail_msg):
 		extra_context = extra_context or {}
 		extra_context['succ_msg'] = succ_msg
 		if fail_msg != '':
 			extra_context['fail_msg'] = fail_msg
+		return extra_context
 
 	def changelist_view(self, request, extra_context=None):
 		# handle request
@@ -217,15 +218,15 @@ class IOStudentAdmin(admin.ModelAdmin):
 			if "student_form" in request.POST and 'file' in request.FILES:
 				handle_uploaded_file(request.FILES['file'], request.POST['grade']+'.csv')
 				succ_msg, fail_msg = store_stu_info(request.POST['grade']+'.csv', request.POST['grade'])
-				_extend_msg(extra_context, succ_msg, fail_msg)
+				extra_context = self._extend_msg(extra_context, succ_msg, fail_msg)
 			elif "course_form" in request.POST:
 				handle_uploaded_file(request.FILES['file'], 'courses.csv')
 				succ_msg, fail_msg = store_course_info('courses.csv')
-				_extend_msg(extra_context, succ_msg, fail_msg)
+				extra_context = self._extend_msg(extra_context, succ_msg, fail_msg)
 			elif "action_form" in request.POST:
 				if "run" in request.POST:
 					succ_msg, fail_msg = schedule_courses()
-					_extend_msg(extra_context, succ_msg, fail_msg)
+					extra_context = self._extend_msg(extra_context, succ_msg, fail_msg)
 				elif "download" in request.POST:
 					return generate_results()
 		return super(IOStudentAdmin, self).changelist_view(

@@ -3,11 +3,13 @@
 {% block title %}{{user.username}}{% endblock %}
 
 {% block body %}
+<h4>请根据自己的年级选择（通常大一为专项1或2，大二为专项3或4）：</h4>
+<hr>
 <form class="" action="choose_cat" method="post">
     {% csrf_token %}
     <input type="hidden" name="cat" value="pe1or2"/>
     <button class="btn btn-lg btn-block {% if primary1 %}btn-primary{% else %}btn-default {% endif %}">
-        体育1或体育2
+        {% if spring_semester %} 专项2 {% else %} 专项1 {% endif %}
     </button>
 </form>
 <hr>
@@ -15,7 +17,7 @@
     {% csrf_token %}
     <input type="hidden" name="cat" value="pe3or4"/>
     <button class="btn btn-lg btn-block {% if primary2 %}btn-primary{% else %}btn-default {% endif %}">
-        体育3或体育4
+        {% if spring_semester %} 专项4 {% else %} 专项3 {% endif %}
     </button>
 </form>
 {% endblock %}

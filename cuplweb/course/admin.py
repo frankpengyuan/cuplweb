@@ -10,12 +10,12 @@ from course.models import CLS_GENDER, STU_GENDER, CAT
 class CourseAdmin(admin.ModelAdmin):
 	list_display = [
 		"course_name", 'day_slot', "time_slot", "course_cat", "gender",
-		"special_req", "cur_number", "max_number", "auto_match",
+		"special_req", "max_number", "cur_number", "add_number", "auto_match",
 	]
 	fieldsets = [
 		(None,		{'fields': ['course_name']}),
 		('课程信息', {'fields': ['day_slot', 'time_slot', 'course_cat', 'gender', 'special_req']}),
-		('自动排课', {'fields': ['auto_match', 'cur_number', 'max_number']}),
+		('自动排课', {'fields': ['auto_match', 'max_number', 'cur_number', 'add_number']}),
 	]
 	search_fields = ['course_name']
 	list_filter = ['course_cat', 'gender', 'day_slot', 'time_slot']

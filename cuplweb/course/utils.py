@@ -23,10 +23,10 @@ class IDValidator(object):
     def validate(self, password, user=None):
         if len(password) != self.length:
             raise ValidationError(
-                "请输入身份证号后8位，字母请大写",
+                "请输入身份证号后8位",
                 code='password_err',
                 params={'length': self.length},
             )
 
     def get_help_text(self):
-        return "请输入身份证号后8位，字母请大写"
+        return "请输入身份证号后8位"

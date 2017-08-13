@@ -58,6 +58,7 @@ class Course(models.Model):
 	)
 	cur_number = models.IntegerField("已注册人数", default=0)
 	max_number = models.IntegerField("最大容量", default=100)
+	add_number = models.IntegerField("排课新增人数", default=0)
 	auto_match = models.BooleanField("参与自动排课", default=True)
 
 	def __str__(self):
@@ -103,11 +104,11 @@ class Student(AbstractBaseUser, PermissionsMixin):
 	password = models.CharField(
 		'身份证号后8位',
 		max_length=128,
-		help_text='身份证号后8位，字母请大写',
+		help_text='身份证号后8位',
 		validators=[
 			validators.RegexValidator(
-				r'^([0-9]{7}[A-X]{1})|([0-9]{8})$',
-				'身份证号后8位，字母请大写',
+				r'^[0-9]{7}[a-z,A-X]{1}$|^[0-9]{8}$',
+				'身份证号后8位',
 				'invalid',
 			),
 		],

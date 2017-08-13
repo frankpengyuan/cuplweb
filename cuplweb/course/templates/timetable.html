@@ -9,7 +9,7 @@
 
 {% block body %}
 <h2 style="text-align: center">请选择 {{weekday_name}} 可上课时间</h2><br>
-<p style="text-align: center">周一至周五请选择至少3节可上课时间（共计），
+<p style="text-align: center">周一至周五请选择至少{{min_select_count}}节可上课时间（共计），
 目前已经已选择<span id="sum">{{cur_selected_num}}</span>节</p>
 <form class="" action="/timetable/{{weekday}}" method="post">
 	{% csrf_token %}

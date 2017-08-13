@@ -2,7 +2,7 @@ from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -10,7 +10,7 @@ from ratelimit.decorators import ratelimit
 
 from ioadmin.models import SiteSetting
 from .utils import system_online_required
-from .models import DAYSLOT, Selection, SpecialReq, StudentReq
+from .models import DAYSLOT, Course, Student, Selection, SpecialReq, StudentReq
 
 
 def error_handler(request):
@@ -22,7 +22,7 @@ def offline(request):
 
 
 @system_online_required
-@ratelimit(key='ip', rate='100/m')
+@ratelimit(key='post:username', rate='10/5m', block=True)
 def mylogin(request):
 	context = {}
 	if request.user.is_authenticated():
@@ -34,6 +34,8 @@ def mylogin(request):
 		if user is not None:
 			login(request, user)
 			request.session.set_expiry(0)
+			if user.is_superuser == True:
+				return redirect('/admin')
 			return redirect('index')
 		else:
 			context['error'] = "学号或身份证号错误"
@@ -45,6 +47,8 @@ def mylogin(request):
 @system_online_required
 def mylogout(request):
 	logout(request)
+	request.session.flush()
+	request.session.modified = True
 	return redirect('mylogin')
 
 
@@ -70,6 +74,8 @@ def userinfo(request):
 def choose_cat(request):
 	context = {}
 	if request.method == 'POST':
+		if "selectable" in request.session:
+			del request.session["selectable"]
 		if request.POST["cat"] == "pe1or2":
 			request.session["course_cat"] = "pe1or2"
 		elif request.POST["cat"] == "pe3or4":
@@ -85,6 +91,7 @@ def choose_cat(request):
 	elif request.session.get('course_cat') == "pe3or4":
 		context["primary2"] = True
 
+	context["spring_semester"] = SiteSetting.objects.get().course_cat == "1"
 	return render(request, "choose_cat.html", context)
 
 
@@ -119,6 +126,8 @@ def special_req(request, special_req_idx):
 	special_req_idx = int(special_req_idx)
 
 	if request.method == 'POST':
+		if "selectable" in request.session:
+			del request.session["selectable"]
 		handle_spec_update(request, special_req_idx)
 		request.session.modified = True
 		return redirect("/special_req/"+str(special_req_idx+1))
@@ -144,21 +153,22 @@ def initial_selectable_in_session(request):
 	if "selectable" in request.session:
 		return
 
-	request.session["selectable"] = defaultdict(list)
-	query = '''SELECT DISTINCT course_course.day_slot, course_course.time_slot
-        FROM course_course LEFT JOIN course_specialreq 
-        ON course_course.course_cat='pe1or2' AND
-        (course_course.gender='M' OR course_course.gender='') AND
-        (course_course.special_req_id IS NULL OR
-        course_course.special_req_id IN
-        (SELECT course_studentreq.special_req_id FROM course_studentreq
-        WHERE course_studentreq.student_id='2015101001'))
-        ORDER BY course_course.day_slot ASC;'''.format(
+	request.session["selectable"] = {day: list() for day in ["1", "2", "3", "4", "5"]}
+	query = '''SELECT DISTINCT day_slot, time_slot FROM 
+        (SELECT * FROM course_course LEFT JOIN course_specialreq ON true) AS t1
+        WHERE course_cat='{}' AND
+        (gender='{}' OR gender='B') AND
+        (special_req_id IS NULL OR
+        special_req_id IN
+        (SELECT special_req_id FROM course_studentreq
+        WHERE student_id='{}'))
+        ORDER BY day_slot ASC;'''.format(
 		request.session["course_cat"],
 		request.user.gender,
 		request.user.username,
 	)
 	
+	print(query)
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		selectable_raw = cursor.fetchall()
@@ -200,6 +210,7 @@ def get_cur_selected_num(request):
 
 
 def get_selectable(request, weekday):
+	print(request.session["selectable"])
 	# weekday: string (char) "1"-"5"
 	selectable = [False] * 4
 	for select in request.session["selectable"][weekday]:
@@ -228,8 +239,9 @@ def handle_selection_update(request, weekday, errors):
 	elif request.POST["to"] == "next" and int(weekday) < 5:
 		return redirect("/timetable/"+str(int(weekday)+1))
 	elif request.POST["to"] == "next" and int(weekday) == 5:
-		if get_cur_selected_num(request) < 3:
-			errors.append("请至少选择3节可上课时间")
+		min_select_count = SiteSetting.objects.get().min_select_count
+		if get_cur_selected_num(request) < min_select_count:
+			errors.append("请至少选择{}节可上课时间".format(min_select_count))
 		return redirect("confirm")
 
 
@@ -256,6 +268,7 @@ def timetable(request, weekday):
 	context = {
 		"cur_selected_num": get_cur_selected_num(request),
 		"errors": errors,
+		"min_select_count": SiteSetting.objects.get().min_select_count,
 		"time_slots": zip(time_slots, slot_names, selected, selectable),
 		"weekday": weekday,
 		"weekday_name": weekday_names[int(weekday)-1],
@@ -300,10 +313,19 @@ def confirm(request):
 	for key in ["course_cat", "selected", "all_req_names", "all_req_flags"]:
 		if key not in request.session:
 	 		return redirect("index")
+
+	semester = SiteSetting.objects.get().course_cat
 	if request.session["course_cat"] == "pe1or2":
-		context["course_cat"] = "专项1"
+		if semester == "1":
+			context["course_cat"] = "专项2"
+		else:
+			context["course_cat"] = "专项1"
 	else:
-		context["course_cat"] = "专项2"
+		if semester == "1":
+			context["course_cat"] = "专项4"
+		else:
+			context["course_cat"] = "专项3"
+
 	slot_names = ["一大", "二大", "三大", "四大"]
 	weekday_names = ["周一", "周二", "周三", "周四", "周五"]
 
@@ -332,3 +354,19 @@ def confirm(request):
 def finish(request):
 	logout(request)
 	return render(request, "finish.html")
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_delete(request):
+	Course.objects.all().delete()
+	Student.objects.filter(is_superuser=False).delete()
+	Selection.objects.all().delete()
+	SpecialReq.objects.all().delete()
+	StudentReq.objects.all().delete()
+	return redirect("/admin/ioadmin/iostudent/")
+
+
+@system_online_required
+def ratelimit_view(request, exception):
+	return HttpResponse("尝试过于频繁，请过5分钟后重试！")
