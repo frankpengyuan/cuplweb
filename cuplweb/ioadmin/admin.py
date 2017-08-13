@@ -64,7 +64,6 @@ def store_stu_info(fname, grade_lv):
 		for line_n, line in enumerate(mfile):
 			fields = [field.strip() for field in line.strip().split(',')]
 			target_fields = [u'XM', u'XB', u'XH', u'SFZH']
-			print(fields)
 			if line_n == 0:
 				if any(t not in fields for t in target_fields):
 					return ("", mark_safe("导入失败，请确认文件包含以下列：<br>"+' '.join(target_fields)))

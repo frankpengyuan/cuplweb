@@ -10,6 +10,7 @@ from course.models import (
 	Student,
 	StudentReq,
 )
+from .models import SiteSetting
 
 
 def _get_target_students():
@@ -177,8 +178,21 @@ def _check_in_req(special_req, stu_special_reqs):
 	return False
 
 
+def _get_course_cat_name(semester, student):
+	if student.course_cat == "pe1or2":
+		if semester == "1":
+			return "专项2"
+		else:
+			return "专项1"
+	else:
+		if semester == "1":
+			return "专项4"
+		else:
+			return "专项3"
+
+
 def generate_results():
-	with open('uploads/results.csv', encoding='utf-8', mode='w+') as mfile:
+	with open('uploads/results.csv', encoding='utf-8-sig', mode='w+') as mfile:
 		header = ("学号,性别,专项,"
 			"1_1,1_2,1_3,1_4,2_1,2_2,2_3,2_4,3_1,3_2,3_3,3_4,4_1,4_2,4_3,4_4,5_1,5_2,5_3,5_4,"
 			"{},"
@@ -186,11 +200,12 @@ def generate_results():
 		mfile.write(header + '\n')
 
 		students = _get_target_students()
+		semester = SiteSetting.objects.get().course_cat
 		for student in students:
 			line_buffer = []
 			line_buffer.append(student.username)
 			line_buffer.append(student.get_gender_display())
-			line_buffer.append(student.get_course_cat_display())
+			line_buffer.append(_get_course_cat_name(semester, student))
 			selections = Selection.objects.filter(student_id=student.username)
 			for day in ["1", "2", "3", "4", "5"]:
 				for time in ["1", "2", "3", "4"]:
