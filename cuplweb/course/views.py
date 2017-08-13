@@ -22,7 +22,7 @@ def offline(request):
 
 
 @system_online_required
-@ratelimit(key='post:username', rate='10/5m', block=True)
+@ratelimit(key='ip', rate='10/m', block=True)
 def mylogin(request):
 	context = {}
 	if request.user.is_authenticated():
@@ -369,4 +369,4 @@ def admin_delete(request):
 
 @system_online_required
 def ratelimit_view(request, exception):
-	return HttpResponse("尝试过于频繁，请过5分钟后重试！")
+	return HttpResponse("尝试过于频繁，请过1分钟后重试！")
