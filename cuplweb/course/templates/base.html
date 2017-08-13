@@ -25,16 +25,18 @@
     {% block preload_js %}{% endblock %}
   </head>
 
-  <body>
+  <body style="padding-top: 10px;">
     {% block logout %}
-    <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+    <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6"
+        style="padding-top: 5px; padding-bottom: 5px;">
         <span>{{user.username}}</span>
         <span style="text-align: right; float: right;"><a href="/logout">注销</a></span>
-        <hr>
+        <hr  style="margin-top: 10px; margin-bottom: 10px">
     </div>
     {% endblock %}
 
     {% block error_block %}
+    {% if errors %}
     <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
     {% for error in errors %}
         <div class="alert alert-danger" role="alert">
@@ -45,9 +47,10 @@
         </div>  
     {% endfor %}
     </div>
+    {% endif %}
     {% endblock %}
 
-    <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+    <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6" style="padding-top: 0px;">
     {% block body %}
     {% endblock %}
     </div>

@@ -3,7 +3,8 @@
 {% block title %}{{user.username}}{% endblock %}
 
 {% block body %}
-<h4>请根据自己的年级选择（通常大一为专项1或2，大二为专项3或4）：</h4>
+<h2>专项选择</h2>
+<h4>通常大一为专项1或2，大二为专项3或4</h4>
 <hr>
 <form class="" action="choose_cat" method="post">
     {% csrf_token %}

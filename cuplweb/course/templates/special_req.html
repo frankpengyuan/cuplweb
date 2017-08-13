@@ -3,7 +3,7 @@
 {% block title %}{{user.username}}{% endblock %}
 
 {% block body %}
-	<h2>是否愿意选择 {{special_req.0}} 的课程？</h2><br>
+	<h2>是否愿意选择 {{special_req.0}} 的课程？</h2>
 	<p>{{special_req.1}}</p><br>
 	<form class="" action="/special_req/{{special_req_idx}}" method="post">
 		{% csrf_token %}

@@ -171,8 +171,8 @@ def initial_selectable_in_session(request):
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		selectable_raw = cursor.fetchall()
-		for day_slot, day_data in groupby(selectable_raw, lambda x: x[0]):
-			request.session["selectable"][day_slot] = sorted([d[1] for d in day_data])
+	for day_slot, day_data in groupby(selectable_raw, lambda x: x[0]):
+		request.session["selectable"][day_slot] = sorted([d[1] for d in day_data])
 
 
 def initial_selected_in_session(request):
@@ -180,12 +180,13 @@ def initial_selected_in_session(request):
 		return
 
 	selected_raw = Selection.objects.filter(
-		student=request.user.username,
+		student_id=request.user.username,
 	).order_by("day_slot", "time_slot")
 
 	request.session["selected"] = defaultdict(list)
 	for day_slot, day_data in groupby(selected_raw, lambda x: x.day_slot):
-		request.session["selected"][day_slot] = sorted(list(day_data))
+		day_selections = list(day_data)
+		request.session["selected"][day_slot] = [s.time_slot for s in day_selections]
 
 
 def make_selected_valid(request):
