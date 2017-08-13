@@ -59,11 +59,12 @@ def _get_gender(data, for_course=False):
 def store_stu_info(fname, grade_lv):
 	students = []
 	failed = []
-	mfile = open('uploads/'+fname, 'r')
+	mfile = open('uploads/'+fname, 'r', encoding="utf-8-sig")
 	try:
 		for line_n, line in enumerate(mfile):
 			fields = [field.strip() for field in line.strip().split(',')]
-			target_fields = ['XM', 'XB', 'XH', 'SFZH']
+			target_fields = [u'XM', u'XB', u'XH', u'SFZH']
+			print(fields)
 			if line_n == 0:
 				if any(t not in fields for t in target_fields):
 					return ("", mark_safe("导入失败，请确认文件包含以下列：<br>"+' '.join(target_fields)))
@@ -90,15 +91,17 @@ def store_stu_info(fname, grade_lv):
 				except FieldException as e:
 					failed.append(line)
 	except UnicodeError as e:
-		failed.append(line)
-	query = '''
-		INSERT INTO course_student (username, password, is_staff, is_superuser, gender, course_cat, auto_match)
-		VALUES %s
-		ON DUPLICATE KEY UPDATE password=VALUES(password), gender=VALUES(gender);
-	''' % ', '.join(students)
+		return "", "请确认文件编码为utf-8"
 
-	with connection.cursor() as cursor:
-		cursor.execute(query)
+	if len(students) > 0:
+		query = '''
+			INSERT INTO course_student (username, password, is_staff, is_superuser, gender, course_cat, auto_match)
+			VALUES %s
+			ON DUPLICATE KEY UPDATE password=VALUES(password), gender=VALUES(gender);
+		''' % ', '.join(students)
+
+		with connection.cursor() as cursor:
+			cursor.execute(query)
 
 	mfile.close()
 	if len(failed) == 0:
@@ -138,7 +141,7 @@ def _get_special_req(data):
 
 
 def store_course_info(fname):
-	mfile = open('uploads/'+fname, 'r')
+	mfile = open('uploads/'+fname, 'r', encoding="utf-8-sig")
 	courses = []
 	failed = []
 	try:
@@ -188,7 +191,7 @@ def store_course_info(fname):
 				except FieldException as e:
 					failed.append(line)
 	except UnicodeError as e:
-		failed.append(line)
+		return "", "请确认文件编码为utf-8"
 
 	mfile.close()
 	Course.objects.all().delete()
