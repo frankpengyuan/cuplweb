@@ -168,7 +168,6 @@ def initial_selectable_in_session(request):
 		request.user.username,
 	)
 	
-	print(query)
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		selectable_raw = cursor.fetchall()
@@ -210,7 +209,6 @@ def get_cur_selected_num(request):
 
 
 def get_selectable(request, weekday):
-	print(request.session["selectable"])
 	# weekday: string (char) "1"-"5"
 	selectable = [False] * 4
 	for select in request.session["selectable"][weekday]:
