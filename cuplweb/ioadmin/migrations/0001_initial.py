@@ -4,6 +4,15 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+def forwards_func(apps, schema_editor):
+    # We get the model from the versioned app registry;
+    # if we directly import it, it'll be the wrong version
+    SiteSetting = apps.get_model("ioadmin", "SiteSetting")
+    db_alias = schema_editor.connection.alias
+    SiteSetting.objects.using(db_alias).bulk_create([
+        SiteSetting(),
+    ])
+
 
 class Migration(migrations.Migration):
 
@@ -38,4 +47,5 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': '网站设置',
             },
         ),
+        migrations.RunPython(forwards_func),
     ]
