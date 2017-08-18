@@ -254,7 +254,7 @@ def timetable(request, weekday):
 			return redir
 
 	time_slots = range(1, 5)
-	slot_names = ["一大", "二大", "三大", "四大"]
+	slot_names = ["第一大节", "第二大节", "第三大节", "第四大节"]
 	weekday_names = ["周一", "周二", "周三", "周四", "周五"]
 	initial_selectable_in_session(request)
 	initial_selected_in_session(request)
@@ -325,7 +325,7 @@ def confirm(request):
 		else:
 			context["course_cat"] = "专项3"
 
-	slot_names = ["一大", "二大", "三大", "四大"]
+	slot_names = ["第一大节", "第二大节", "第三大节", "第四大节"]
 	weekday_names = ["周一", "周二", "周三", "周四", "周五"]
 
 	context["special_reqs"] = []

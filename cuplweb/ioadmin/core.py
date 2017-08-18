@@ -13,15 +13,16 @@ from course.models import (
 from .models import SiteSetting
 
 
-def _get_target_students():
+def _get_target_students(reset_course=True):
 	student_ids_p1 = set(Selection.objects.values_list("student_id", flat=True).distinct())
 	student_ids_p2 = set(Student.objects.filter(
 		course_id__isnull=False).values_list("username", flat=True).distinct())
 	student_ids = student_ids_p1 | student_ids_p2
 	students = Student.objects.filter(username__in=student_ids)
-	for student in students:
-		if student.auto_match == True:
-			student.course = None
+	if reset_course:
+		for student in students:
+			if student.auto_match == True:
+				student.course = None
 	return students
 
 
@@ -195,11 +196,14 @@ def generate_results():
 	with open('uploads/results.csv', encoding='utf-8-sig', mode='w+') as mfile:
 		header = ("学号,性别,专项,"
 			"1_1,1_2,1_3,1_4,2_1,2_2,2_3,2_4,3_1,3_2,3_3,3_4,4_1,4_2,4_3,4_4,5_1,5_2,5_3,5_4,"
-			"{},"
-			"排课结果").format(",".join(spe.name for spe in SpecialReq.objects.all().order_by("id")))
+			"{}{}"
+			"排课结果").format(
+				",".join(spe.name for spe in SpecialReq.objects.all().order_by("id")),
+				"," if SpecialReq.objects.all().count() > 0 else "",
+				)
 		mfile.write(header + '\n')
 
-		students = _get_target_students()
+		students = _get_target_students(reset_course=False)
 		semester = SiteSetting.objects.get().course_cat
 		for student in students:
 			line_buffer = []
