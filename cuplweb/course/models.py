@@ -129,7 +129,7 @@ class Student(AbstractBaseUser, PermissionsMixin):
 		default=None, 
 		blank=True,
 		null=True,
-		on_delete=models.CASCADE,
+		on_delete=models.SET_NULL,
 		verbose_name="排课",
 	)
 
