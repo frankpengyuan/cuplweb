@@ -9,6 +9,7 @@ from django.contrib.auth.models import (
 	BaseUserManager,
 	PermissionsMixin,
 )
+from django_bulk_update.manager import BulkUpdateManager
 
 # Create your models here.
 
@@ -61,6 +62,8 @@ class Course(models.Model):
 	add_number = models.IntegerField("排课新增人数", default=0)
 	auto_match = models.BooleanField("参与自动排课", default=True)
 
+	objects = BulkUpdateManager()
+	
 	def __str__(self):
 		return self.course_name
 
@@ -69,7 +72,7 @@ class Course(models.Model):
 		verbose_name_plural = '课程'
 
 
-class StudentManager(BaseUserManager):
+class StudentManager(BaseUserManager, BulkUpdateManager):
 	use_in_migrations = True
 
 	def _create_user(self, username, password,

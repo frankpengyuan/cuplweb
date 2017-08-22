@@ -83,7 +83,9 @@ def _get_valid_courses(student, courses):
 	for course in courses:
 		if course.auto_match == False:
 			continue
-		elif course.cur_number + course.add_number >= course.max_number:
+		if course.cur_number + course.add_number >= course.max_number:
+			continue
+		if course.course_cat != student.course_cat:
 			continue
 		if course.gender == "B" or course.gender == student.gender:
 			if _req_met(course, reqs):
@@ -114,10 +116,8 @@ def _get_best_course(student, time_course_dict):
 
 
 def _save_to_db(students, courses):
-	for student in students:
-		student.save()
-	for course in courses:
-		course.save()
+	Student.objects.bulk_update(students, update_fields=['course_id'])
+	Course.objects.bulk_update(courses, update_fields=['add_number'])
 
 
 def _initial_assign(students, all_courses):
