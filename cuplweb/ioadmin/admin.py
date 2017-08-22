@@ -146,12 +146,13 @@ def store_course_info(fname):
 	try:
 		for line_n, line in enumerate(mfile):
 			fields = [field.strip() for field in line.strip().split(',')]
-			target_fields = ["课序", "课程名", "课容量", "选课人数", "星期一",
+			target_fields = ["课程号", "课序", "课程名", "课容量", "选课人数", "星期一",
 				"星期二", "星期三", "星期四", "星期五", "性别", "特别要求"]
 			if line_n == 0:
 				if any(t not in fields for t in target_fields):
 					return ("", mark_safe("导入失败，请确认文件包含以下列：<br>"+' '.join(target_fields)))
 				header_dict = {
+					'course_number': fields.index("课程号"),
 					'course_idx': fields.index("课序"),
 					'course_name': fields.index("课程名"),
 					'capacity': fields.index("课容量"),
@@ -168,6 +169,7 @@ def store_course_info(fname):
 				}
 			elif fields[header_dict['course_name']] != '':
 				course_name = '-'.join([
+					fields[header_dict['course_number']],
 					fields[header_dict['course_name']],
 					fields[header_dict['course_idx']],
 				])

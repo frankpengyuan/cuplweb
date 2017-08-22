@@ -66,7 +66,12 @@ def index(request):
 @system_online_required
 @login_required
 def userinfo(request):
-	return render(request, "userinfo.html")
+	if not request.session.get('course_cat', False):
+		request.session["course_cat"] = request.user.course_cat
+	initial_spec_in_session(request)
+	initial_selected_in_session(request)
+	context = _get_confirm_info(request)
+	return render(request, "userinfo.html", context)
 
 
 @system_online_required
@@ -301,30 +306,22 @@ def save_data(request):
 	Selection.objects.bulk_create(selections)
 
 
-@system_online_required
-@login_required
-def confirm(request):
-	if request.method == 'POST':
-		save_data(request)
-		return redirect("finish")
-
+def _get_confirm_info(request):
 	context = {}
-	for key in ["course_cat", "selected", "all_req_names", "all_req_flags"]:
-		if key not in request.session:
-	 		return redirect("index")
-
 	semester = SiteSetting.objects.get().course_cat
 	if request.session["course_cat"] == "pe1or2":
 		if semester == "1":
 			context["course_cat"] = "专项2"
 		else:
 			context["course_cat"] = "专项1"
-	else:
+	elif request.session["course_cat"] == "pe3or4":
 		if semester == "1":
 			context["course_cat"] = "专项4"
 		else:
 			context["course_cat"] = "专项3"
-
+	else:
+		context["course_cat"] = "未选择"
+	
 	slot_names = ["第一大节", "第二大节", "第三大节", "第四大节"]
 	weekday_names = ["周一", "周二", "周三", "周四", "周五"]
 
@@ -346,6 +343,21 @@ def confirm(request):
 				"day_slot": weekday_names[int(day)-1],
 				"time_slot": slot_names[int(select)-1],
 			})
+	return context
+
+
+@system_online_required
+@login_required
+def confirm(request):
+	if request.method == 'POST':
+		save_data(request)
+		return redirect("finish")
+
+	for key in ["course_cat", "selected", "all_req_names", "all_req_flags"]:
+		if key not in request.session:
+			return redirect("index")
+	
+	context = _get_confirm_info(request)
 	return render(request, "confirm.html", context)
 
 

@@ -6,10 +6,20 @@
 
 <div>
     <h2>{{user.username}}</h2>
-    确认信息，以下信息如有误请到办公室更正。<br>
+    已提交信息，性别如有误请到办公室更正。<br>
     <hr>
-    <strong>性别:</strong> {{user.get_gender_display}}<br>
-</div> <!-- /container -->
+    <h3>
+    <strong>性别: </strong>{{user.get_gender_display}}<br>
+    <strong>选课类别：</strong>{{course_cat}}<br>
+    {% for special in special_reqs %}
+    是否选 {{special.name}}: {{special.choose_disp}}<br>
+    {% endfor %}<br>
+    <strong>已选时间段：</strong><br>
+    {% for select in selections %}
+    {{select.day_slot}} {{select.time_slot}}<br>
+    {% endfor %}
+    </h3>
+</div>
 <div class="col-xs-6 col-xs-offset-6">
     <a href="/choose_cat"><button class="btn btn-lg btn-block btn-default">确定</button></a>
 </div>

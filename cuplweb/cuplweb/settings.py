@@ -125,3 +125,5 @@ STATIC_URL = '/static/'
 RATELIMIT_ENABLE = True
 
 RATELIMIT_VIEW = 'course.views.ratelimit_view'
+
+# MEDIA_ROOT = 'M:\\Work\\cupl_web_new\\cuplweb\\uploads'
