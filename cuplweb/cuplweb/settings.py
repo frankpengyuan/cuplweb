@@ -25,7 +25,7 @@ SECRET_KEY = '550ttj+-sxfbqo)8tza@iz3z=cmc1vvoc_25u7hryohg!5^&bs'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "35.199.183.152"]
+ALLOWED_HOSTS = ["127.0.0.1", "35.197.117.68"]
 
 
 # Application definition
@@ -125,3 +125,5 @@ STATIC_URL = '/static/'
 RATELIMIT_ENABLE = True
 
 RATELIMIT_VIEW = 'course.views.ratelimit_view'
+
+# MEDIA_ROOT = 'M:\\Work\\cupl_web_new\\cuplweb\\uploads'
