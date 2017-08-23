@@ -129,6 +129,8 @@ def _initial_assign(students, all_courses):
 			continue
 		time_course_dict = _get_time_course_map(valid_courses)
 		the_course = _get_best_course(student, time_course_dict)
+		if the_course is None:
+			continue
 		_assign_student(student, the_course)
 
 
@@ -142,6 +144,8 @@ def _reassign(students, all_courses):
 			continue
 		time_course_dict = _get_time_course_map(valid_courses)
 		the_course = _get_best_course(student, time_course_dict)
+		if the_course is None:
+			continue
 		if student.course is not None:
 			old_course = name_course_dict[student.course_id]
 			if the_course.cur_number+the_course.add_number < old_course.cur_number+old_course.add_number:
@@ -156,7 +160,7 @@ def schedule_courses():
 
 	_refresh_add_num(students, all_courses)
 	_initial_assign(students, all_courses)
-	for _ in range(5):
+	for _ in range(10):
 		_reassign(students, all_courses)
 	_save_to_db(students, all_courses)
 
