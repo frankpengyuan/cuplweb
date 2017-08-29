@@ -26,7 +26,7 @@ def offline(request):
 def mylogin(request):
 	context = {}
 	if request.user.is_authenticated():
-		if user.is_superuser == True:
+		if request.user.is_superuser == True:
 			return redirect('/admin')
 		return redirect('index')
 	if request.method == 'POST':
