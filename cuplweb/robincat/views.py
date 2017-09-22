@@ -9,7 +9,7 @@ def get_price(request):
     try:
         symbol = request.POST.get("result").get("parameters").get("symbol")
     except Exception:
-        return 
+        return
     stock_info = json.loads(urllib.request.urlopen(
         "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&"
         "symbol={}&interval=1min&apikey=AHY5RTTYJ34OILWU".format(symbol)).read())
