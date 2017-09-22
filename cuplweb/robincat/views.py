@@ -18,7 +18,7 @@ def get_price(request):
         for time, values in stock_info.get("Time Series (1min)").items()])[-1]
     price = Decimal(latest_info[1].get("4. close"))
 
-    speech = "The price at {} is {}".format(latest_info[0], price)
+    speech = "The price of {} at {} is {}".format(symbol, latest_info[0], price)
 
     print(speech)
 
