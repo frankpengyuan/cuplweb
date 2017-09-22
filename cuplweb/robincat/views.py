@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def get_price(request):
-    print(request.POST)
+    print(request.POST, request.body)
     symbol = request.POST.get("result").get("parameters").get("symbol")
     stock_info = json.loads(urllib.request.urlopen(
         "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&"
