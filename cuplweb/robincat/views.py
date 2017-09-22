@@ -3,8 +3,10 @@ import json
 import urllib.request
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def get_price(request):
     try:
         symbol = request.POST.get("result").get("parameters").get("symbol")
