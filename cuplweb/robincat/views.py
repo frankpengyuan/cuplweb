@@ -12,7 +12,7 @@ def get_price(request):
     symbol = json.loads(request.body.decode('utf-8')).get("result").get("parameters").get("symbol")
     stock_info = json.loads(urllib.request.urlopen(
         "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&"
-        "symbol={}&interval=1min&apikey=AHY5RTTYJ34OILWU".format(symbol)).read())
+        "symbol={}&interval=1min&apikey=AHY5RTTYJ34OILWU".format(symbol)).read().decode('utf-8'))
     latest_info = sorted([(time, values) 
         for time, values in stock_info.get("Time Series (1min)").items()])[-1]
     price = Decimal(latest_info[1].get("4. close"))
