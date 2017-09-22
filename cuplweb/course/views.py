@@ -54,6 +54,10 @@ def mylogout(request):
 	return redirect('mylogin')
 
 
+def policy(request):
+	return render(request, "policy.html")
+
+
 @system_online_required
 @login_required
 def index(request):
