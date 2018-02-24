@@ -125,10 +125,21 @@ def initial_spec_in_session(request):
 
 
 def handle_spec_update(request, special_req_idx):
+	if "choose" in request.POST:
+		special_req_id = SpecialReq.objects.get(
+			name=request.session["all_req_names"][special_req_idx]).id
 	if request.POST["choose"] == "true":
 		request.session["all_req_flags"][special_req_idx] = True
+		StudentReq.objects.get_or_create(
+			student_id=request.user.username,
+			special_req_id=special_req_id,
+		)
 	elif request.POST["choose"] == "false":
 		request.session["all_req_flags"][special_req_idx] = False
+		StudentReq.objects.filter(
+			student_id=request.user.username,
+			special_req_id=special_req_id,
+		).delete()
 
 
 @system_online_required
@@ -178,7 +189,7 @@ def initial_selectable_in_session(request):
 		request.user.gender,
 		request.user.username,
 	)
-	
+
 	with connection.cursor() as cursor:
 		cursor.execute(query)
 		selectable_raw = cursor.fetchall()
