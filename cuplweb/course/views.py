@@ -77,7 +77,8 @@ def userinfo(request):
 	initial_spec_in_session(request)
 	initial_selected_in_session(request)
 	context = _get_confirm_info(request)
-	return render(request, "userinfo.html", context)
+	# return render(request, "userinfo.html", context)
+	return redirect('choose_cat')
 
 
 @system_online_required
